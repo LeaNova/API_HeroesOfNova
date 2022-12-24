@@ -37,7 +37,7 @@ public class UsuarioController : ControllerBase {
                 
                 u.pass = pass;
 
-                context.Usuarios.Add(u);
+                context.usuarios.Add(u);
                 context.SaveChanges();
 
                 return CreatedAtAction(nameof(obtener), new { id = u.idUsuario }, u);
@@ -57,7 +57,7 @@ public class UsuarioController : ControllerBase {
     public async Task<IActionResult> actualizarPerfil([FromForm] UsuarioView uView) {
         try {
             if(ModelState.IsValid && isValid(uView)) {
-                Usuario original = await context.Usuarios
+                Usuario original = await context.usuarios
                     .AsNoTracking()
                     .SingleOrDefaultAsync(x => x.mail == "mail");
             }
@@ -69,9 +69,10 @@ public class UsuarioController : ControllerBase {
 
     //Obtencion
     [HttpGet("users")]
+    [AllowAnonymous]
     public async Task<ActionResult<Usuario>> obtenerTodos() {
         try {
-            var listaUsuarios = await context.Usuarios
+            var listaUsuarios = await context.usuarios
                 .Include(x => x.rol)
                 .ToListAsync();
 
@@ -84,7 +85,7 @@ public class UsuarioController : ControllerBase {
     [HttpGet("user/{id}")]
     public async Task<ActionResult<Usuario>> obtener(int id) {
         try {
-            var result = context.Usuarios.Include(x => x.rol).Where(x => x.idUsuario == id);
+            var result = context.usuarios.Include(x => x.rol).Where(x => x.idUsuario == id);
 
             return Ok(result);
         } catch (Exception ex) {
@@ -97,7 +98,7 @@ public class UsuarioController : ControllerBase {
     [AllowAnonymous]
     public async Task<IActionResult> login([FromForm] LoginView lView) {
         try {
-            Usuario u = await context.Usuarios
+            Usuario u = await context.usuarios
                 .Include(x => x.rol)
                 .FirstOrDefaultAsync(x => x.mail == lView.mail);
 

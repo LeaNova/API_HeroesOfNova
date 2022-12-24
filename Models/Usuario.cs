@@ -11,7 +11,7 @@ public class Usuario {
     public string apellido { get; set; }
     public string mail { get; set; }
     public string pass { get; set; }
-    public int? rolId { get; set; }
+    public int rolId { get; set; }
     [ForeignKey(nameof(rolId))]
     public Rol? rol { get; set; }
 }

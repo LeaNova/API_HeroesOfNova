@@ -9,12 +9,13 @@ public class UsuarioView {
         this.apellido = u.apellido;
         this.mail = u.mail;
         this.rolId = u.rolId;
+        this.rol = u.rol;
     }
 
     public string nombre { get; set; }
     public string apellido { get; set; }
     public string mail {get; set; }
-    public int? rolId { get; set; }
+    public int rolId { get; set; }
     [ForeignKey(nameof(rolId))]
-    public Rol rol { get; set; }
+    public Rol? rol { get; set; }
 }
