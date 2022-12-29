@@ -22,6 +22,16 @@ public class ClaseController : ControllerBase {
     public async Task<IActionResult> alta([FromForm] Clase c) {
         try {
             if(ModelState.IsValid) {
+                c.modVida = c.modVida > 100 ? c.modVida/100 : c.modVida/10;
+                c.modAtk = c.modAtk > 100 ? c.modAtk/100 : c.modAtk/10;
+                c.modAtm = c.modAtm > 100 ? c.modAtm/100 : c.modAtm/10;
+                c.modDef = c.modDef > 100 ? c.modDef/100 : c.modDef/10;
+                c.modDfm = c.modDfm > 100 ? c.modDfm/100 : c.modDfm/10;
+                c.modDex = c.modDex > 100 ? c.modDex/100 : c.modDex/10;
+                c.modEva = c.modEva > 100 ? c.modEva/100 : c.modEva/10;
+                c.modCrt = c.modCrt > 100 ? c.modCrt/100 : c.modCrt/10;
+                c.modAcc = c.modAcc > 100 ? c.modAcc/100 : c.modAcc/10;
+            
                 context.clases.Add(c);
                 context.SaveChanges();
 
@@ -35,7 +45,7 @@ public class ClaseController : ControllerBase {
 
     //Baja
     [HttpDelete("borrar/{id}")]
-    public async Task<IActionResult> baja(string id) {
+    public async Task<IActionResult> baja(int id) {
         try {
             Clase c = context.clases
                 .AsNoTracking()
@@ -55,7 +65,7 @@ public class ClaseController : ControllerBase {
 
     //Modificar
     [HttpPost("modificar/{id}")]
-    public async Task<IActionResult> modificar([FromForm] Clase c, string id) {
+    public async Task<IActionResult> modificar([FromForm] Clase c, int id) {
         try {
             if(ModelState.IsValid) {
                 Clase original = context.clases
@@ -79,8 +89,19 @@ public class ClaseController : ControllerBase {
     }
 
     //Obtener
+    [HttpGet("get")]
+    public async Task<ActionResult<Clase>> obtener() {
+        try {
+            var listaClases = await context.clases.ToListAsync();
+
+            return Ok(listaClases);
+        } catch (Exception ex) {
+            return BadRequest(ex.Message);
+        }
+    }
+
     [HttpGet("get/{id}")]
-    public async Task<ActionResult<Clase>> obtener(string id) {
+    public async Task<ActionResult<Clase>> obtenerId(int id) {
         try {
             Clase c = context.clases
                 .FirstOrDefault(x => x.idClase == id);
@@ -95,12 +116,17 @@ public class ClaseController : ControllerBase {
         }
     }
 
-    [HttpGet("get")]
-    public async Task<ActionResult<Clase>> obtenerTodos() {
+    [HttpGet("check_nombre/{nombre}")]
+    public async Task<ActionResult<Clase>> obtenerNombre(string nombre) {
         try {
-            var listaClases = await context.clases.ToListAsync();
+            Clase c = context.clases
+                .FirstOrDefault(x => x.nombre == nombre);
+            
+            if(c != null) {
+                return Ok(c);
+            }
 
-            return Ok(listaClases);
+            return BadRequest("Objeto vacío");
         } catch (Exception ex) {
             return BadRequest(ex.Message);
         }

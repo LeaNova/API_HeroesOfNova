@@ -5,7 +5,7 @@ namespace API_HeroesOfNova;
 public class Clase {
 
     [Key]
-    public string idClase { get; set; }
+    public int idClase { get; set; }
     public string nombre { get; set; }
     public string descripcion { get; set; }
     public float modVida { get; set; }

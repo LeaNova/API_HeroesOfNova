@@ -11,7 +11,7 @@ public class Personaje {
     public string nombre { get; set; }
     public int razaId { get; set; }
     public int generoId { get; set; }
-    public string claseId { get; set; }
+    public int claseId { get; set; }
     public int vida { get; set; }
     public int nivel { get; set; }
     public int experiencia { get; set; }
@@ -29,7 +29,8 @@ public class Personaje {
     //Extras
     public string descripcion { get; set; }
     public int mochilaId { get; set; }
-    public bool? disponible { get; set; }
+    public bool disponible { get; set; }
+    public DateTime fechaCreado { get; set; }
 
     //Clases foráneas
     [ForeignKey(nameof(usuarioId))]

@@ -36,6 +36,7 @@ public class UsuarioController : ControllerBase {
 					numBytesRequested: 256 / 8));
                 
                 u.pass = pass;
+                u.fechaCreado = DateTime.Now;
 
                 context.usuarios.Add(u);
                 context.SaveChanges();
@@ -67,7 +68,7 @@ public class UsuarioController : ControllerBase {
         }
     }
 
-    //Obtencion
+    //Busquedas
     [HttpGet("users")]
     [AllowAnonymous]
     public async Task<ActionResult<Usuario>> obtenerTodos() {
@@ -82,12 +83,55 @@ public class UsuarioController : ControllerBase {
         }
     }
 
-    [HttpGet("user/{id}")]
-    public async Task<ActionResult<Usuario>> obtener(int id) {
+    [HttpGet("get")]
+    [AllowAnonymous]
+    public async Task<ActionResult<Usuario>> obtener() {
         try {
-            var result = context.usuarios.Include(x => x.rol).Where(x => x.idUsuario == id);
+            int id = Int32.Parse(User.Claims.First(x => x.Type == "id").Value);
+            Usuario u = context.usuarios
+            .Include(x => x.rol)
+            .FirstOrDefault(x => x.idUsuario == id);
 
-            return Ok(result);
+            UsuarioView uView = new UsuarioView(u);
+            return Ok(uView);
+        } catch (Exception ex) {
+            return BadRequest(ex.Message);
+        }
+    }
+
+    [HttpGet("check_mail/{mail}")]
+    [AllowAnonymous]
+    public async Task<ActionResult<Usuario>> obtenerMail(string mail) {
+        try {
+            Usuario u = context.usuarios
+            .Include(x => x.rol)
+            .FirstOrDefault(x => x.mail == mail);
+
+            if(u != null) {
+                UsuarioView uView = new UsuarioView(u);
+                return Ok(uView);
+            }
+
+            return BadRequest("Objeto vacío");
+        } catch (Exception ex) {
+            return BadRequest(ex.Message);
+        }
+    }
+
+    [HttpGet("check_usuario/{usuario}")]
+    [AllowAnonymous]
+    public async Task<ActionResult<Usuario>> obtenerUsuario(string usuario) {
+        try {
+            Usuario u = context.usuarios
+            .Include(x => x.rol)
+            .FirstOrDefault(x => x.usuario == usuario);
+
+            if(u != null) {
+                UsuarioView uView = new UsuarioView(u);
+                return Ok(uView);
+            }
+            
+            return BadRequest("Objeto vacío");
         } catch (Exception ex) {
             return BadRequest(ex.Message);
         }

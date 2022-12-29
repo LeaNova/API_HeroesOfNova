@@ -80,8 +80,19 @@ public class MochilaController : ControllerBase {
     }
 
     //Obtener
+    [HttpGet("get")]
+    public async Task<ActionResult<Mochila>> obtener() {
+        try {
+            var listaMochilas = await context.mochilas.ToListAsync();
+
+            return Ok(listaMochilas);
+        } catch (Exception ex) {
+            return BadRequest(ex.Message);
+        }
+    }
+
     [HttpGet("get/{id}")]
-    public async Task<ActionResult<Mochila>> obtener(int id) {
+    public async Task<ActionResult<Mochila>> obtenerId(int id) {
         try {
             Mochila m = context.mochilas
                 .FirstOrDefault(x => x.idMochila == id);
@@ -96,12 +107,17 @@ public class MochilaController : ControllerBase {
         }
     }
 
-    [HttpGet("get")]
-    public async Task<ActionResult<Mochila>> obtenerTodos() {
+    [HttpGet("check_nombre/{nombre}")]
+    public async Task<ActionResult<Mochila>> obtenerNombre(string nombre) {
         try {
-            var listaMochilas = await context.mochilas.ToListAsync();
+            Mochila m = context.mochilas
+                .FirstOrDefault(x => x.nombre == nombre);
+            
+            if(m != null) {
+                return Ok(m);
+            }
 
-            return Ok(listaMochilas);
+            return BadRequest("Objeto vacío");
         } catch (Exception ex) {
             return BadRequest(ex.Message);
         }

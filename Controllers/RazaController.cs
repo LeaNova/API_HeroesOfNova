@@ -80,6 +80,17 @@ public class RazaController : ControllerBase {
     }
 
     //Obtener
+    [HttpGet("get")]
+    public async Task<ActionResult<Raza>> obtener() {
+        try {
+            var listaRaza = await context.razas.ToListAsync();
+
+            return Ok(listaRaza);
+        } catch (Exception ex) {
+            return BadRequest(ex.Message);
+        }
+    }
+
     [HttpGet("get/{id}")]
     public async Task<ActionResult<Raza>> obtenerId(int id) {
         try {
@@ -89,13 +100,14 @@ public class RazaController : ControllerBase {
             if(r != null) {
                 return Ok(r);
             }
+
             return BadRequest("Objeto vacío");
         } catch (Exception ex) {
             return BadRequest(ex.Message);
         }
     }
 
-    [HttpGet("get/{str}")]
+    [HttpGet("check_nombre/{nombre}")]
     public async Task<ActionResult<Raza>> obtenerNombre(string nombre) {
         try {
             Raza r = context.razas
@@ -104,18 +116,8 @@ public class RazaController : ControllerBase {
             if(r != null) {
                 return Ok(r);
             }
+
             return BadRequest("Objeto vacío");
-        } catch (Exception ex) {
-            return BadRequest(ex.Message);
-        }
-    }
-
-    [HttpGet("get")]
-    public async Task<ActionResult<Raza>> obtenerTodos() {
-        try {
-            var listaRaza = await context.razas.ToListAsync();
-
-            return Ok(listaRaza);
         } catch (Exception ex) {
             return BadRequest(ex.Message);
         }

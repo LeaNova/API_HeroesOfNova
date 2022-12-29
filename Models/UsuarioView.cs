@@ -9,6 +9,7 @@ public class UsuarioView {
         this.apellido = u.apellido;
         this.mail = u.mail;
         this.rolId = u.rolId;
+        this.fechaCreado = u.fechaCreado;
         this.rol = u.rol;
     }
 
@@ -16,6 +17,7 @@ public class UsuarioView {
     public string apellido { get; set; }
     public string mail {get; set; }
     public int rolId { get; set; }
+    public DateTime fechaCreado { get; set; }
     [ForeignKey(nameof(rolId))]
     public Rol? rol { get; set; }
 }

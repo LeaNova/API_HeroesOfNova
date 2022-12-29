@@ -24,7 +24,8 @@ public class PersonajeController : ControllerBase {
         try {
             if(ModelState.IsValid) {
                 p.usuarioId = Int32.Parse(User.Claims.First(x => x.Type == "id").Value);
-
+                p.fechaCreado = DateTime.Now;
+                
                 context.personajes.Add(p);
                 context.SaveChanges();
 
