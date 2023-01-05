@@ -35,7 +35,7 @@ public class ClaseController : ControllerBase {
                 context.clases.Add(c);
                 context.SaveChanges();
 
-                return CreatedAtAction(nameof(obtener), new { id = c.idClase }, c);
+                return CreatedAtAction(nameof(obtenerId), new { id = c.idClase }, c);
             }
             return BadRequest("Error en crear");
         } catch (Exception ex) {
@@ -89,17 +89,6 @@ public class ClaseController : ControllerBase {
     }
 
     //Obtener
-    [HttpGet("get")]
-    public async Task<ActionResult<Clase>> obtener() {
-        try {
-            var listaClases = await context.clases.ToListAsync();
-
-            return Ok(listaClases);
-        } catch (Exception ex) {
-            return BadRequest(ex.Message);
-        }
-    }
-
     [HttpGet("get/{id}")]
     public async Task<ActionResult<Clase>> obtenerId(int id) {
         try {
@@ -127,6 +116,17 @@ public class ClaseController : ControllerBase {
             }
 
             return BadRequest("Objeto vacío");
+        } catch (Exception ex) {
+            return BadRequest(ex.Message);
+        }
+    }
+    
+    [HttpGet("get")]
+    public async Task<ActionResult<Clase>> obtener() {
+        try {
+            var listaClases = await context.clases.ToListAsync();
+
+            return Ok(listaClases);
         } catch (Exception ex) {
             return BadRequest(ex.Message);
         }

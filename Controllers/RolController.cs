@@ -16,7 +16,7 @@ public class RolController : ControllerBase {
 
     //Obtener
     [HttpGet("get")]
-    public async Task<ActionResult<Rol>> obtenerTodos() {
+    public async Task<ActionResult<Rol>> obtener() {
         try {
             var listaRoles = await context.roles.ToListAsync();
 

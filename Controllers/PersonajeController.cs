@@ -29,7 +29,7 @@ public class PersonajeController : ControllerBase {
                 context.personajes.Add(p);
                 context.SaveChanges();
 
-                return CreatedAtAction(nameof(obtener), new { id = p.idPersonaje }, p);
+                return CreatedAtAction(nameof(obtenerId), new { id = p.idPersonaje }, p);
             }
 
             return BadRequest("Error en crear");
@@ -64,8 +64,26 @@ public class PersonajeController : ControllerBase {
     //Modificacion
 
     //Busquedas
+    [HttpGet("get")]
+    public async Task<ActionResult<Personaje>> obtener() {
+        try {
+            int id = Int32.Parse(User.Claims.First(x => x.Type == "id").Value);
+
+            var listaPersonajes = context.personajes
+            .Include(x => x.raza)
+            .Include(x => x.genero)
+            .Include(x => x.clase)
+            .Include(x => x.mochila)
+            .Where(x => x.usuarioId == id);
+            
+            return Ok(listaPersonajes);
+        } catch (Exception ex) {
+            return BadRequest(ex.Message);
+        }
+    }
+
     [HttpGet("get/{id}")]
-    public async Task<ActionResult<Personaje>> obtener(int id) {
+    public async Task<ActionResult<Personaje>> obtenerId(int id) {
         try {
             Personaje p = await context.personajes
             .Include(x => x.raza)
@@ -83,24 +101,4 @@ public class PersonajeController : ControllerBase {
             return BadRequest(ex.Message);
         }
     }
-
-    [HttpGet("get")]
-    public async Task<ActionResult<Personaje>> obtenerTodos() {
-        try {
-            int id = Int32.Parse(User.Claims.First(x => x.Type == "id").Value);
-
-            var listaPersonajes = context.personajes
-            .Include(x => x.raza)
-            .Include(x => x.genero)
-            .Include(x => x.clase)
-            .Include(x => x.mochila)
-            .Where(x => x.usuarioId == id);
-            
-            return Ok(listaPersonajes);
-        } catch (Exception ex) {
-            return BadRequest(ex.Message);
-        }
-    }
-
-    //Level up
 }

@@ -25,7 +25,7 @@ public class MochilaController : ControllerBase {
                 context.mochilas.Add(m);
                 context.SaveChanges();
                 
-                return CreatedAtAction(nameof(obtener), new { id = m.idMochila }, m);
+                return CreatedAtAction(nameof(obtenerId), new { id = m.idMochila }, m);
             }
             return BadRequest("Error en crear");
         } catch (Exception ex) {

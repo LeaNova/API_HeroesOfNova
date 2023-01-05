@@ -25,7 +25,7 @@ public class GeneroController : ControllerBase {
                 context.generos.Add(g);
                 context.SaveChanges();
                 
-                return CreatedAtAction(nameof(obtener), new { id = g.idGenero }, g);
+                return CreatedAtAction(nameof(obtenerId), new { id = g.idGenero }, g);
             }
             return BadRequest("Error en crear");
         } catch (Exception ex) {
@@ -80,7 +80,7 @@ public class GeneroController : ControllerBase {
 
     //Obtener
     [HttpGet("get/{id}")]
-    public async Task<ActionResult<Genero>> obtener(int id) {
+    public async Task<ActionResult<Genero>> obtenerId(int id) {
         try {
             Genero g = context.generos
                 .FirstOrDefault(x => x.idGenero == id);

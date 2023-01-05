@@ -11,7 +11,7 @@ using MySqlConnector;
 namespace API_HeroesOfNova;
 
 [ApiController]
-[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+[AllowAnonymous]
 [Route("usuario")]
 public class UsuarioController : ControllerBase {
     private readonly DataContext context;
@@ -24,7 +24,6 @@ public class UsuarioController : ControllerBase {
 
     //Alta
     [HttpPost("signin")]
-    [AllowAnonymous]
     public async Task<IActionResult> alta([FromForm] Usuario u) {
         try {
             if(ModelState.IsValid && isValid(new UsuarioView(u))) {
@@ -55,6 +54,7 @@ public class UsuarioController : ControllerBase {
 
     //Modificacion
     [HttpPost("actualizar/perfil")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public async Task<IActionResult> actualizarPerfil([FromForm] UsuarioView uView) {
         try {
             if(ModelState.IsValid && isValid(uView)) {
@@ -69,22 +69,8 @@ public class UsuarioController : ControllerBase {
     }
 
     //Busquedas
-    [HttpGet("users")]
-    [AllowAnonymous]
-    public async Task<ActionResult<Usuario>> obtenerTodos() {
-        try {
-            var listaUsuarios = await context.usuarios
-                .Include(x => x.rol)
-                .ToListAsync();
-
-            return Ok(listaUsuarios);
-        } catch (Exception ex) {
-            return BadRequest(ex.Message);
-        }
-    }
-
     [HttpGet("get")]
-    [AllowAnonymous]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public async Task<ActionResult<Usuario>> obtener() {
         try {
             int id = Int32.Parse(User.Claims.First(x => x.Type == "id").Value);
@@ -99,8 +85,25 @@ public class UsuarioController : ControllerBase {
         }
     }
 
+    [HttpGet("get/{id}")]
+    public async Task<ActionResult<Usuario>> obtenerId(int id) {
+        try {
+            Usuario u = context.usuarios
+            .Include(x => x.rol)
+            .FirstOrDefault(x => x.idUsuario == id);
+
+            if(u != null) {
+                UsuarioView uView = new UsuarioView(u);
+                return Ok(uView);
+            }
+
+            return BadRequest("Objeto vacío");
+        } catch (Exception ex) {
+            return BadRequest(ex.Message);
+        }
+    }
+
     [HttpGet("check_mail/{mail}")]
-    [AllowAnonymous]
     public async Task<ActionResult<Usuario>> obtenerMail(string mail) {
         try {
             Usuario u = context.usuarios
@@ -119,7 +122,6 @@ public class UsuarioController : ControllerBase {
     }
 
     [HttpGet("check_usuario/{usuario}")]
-    [AllowAnonymous]
     public async Task<ActionResult<Usuario>> obtenerUsuario(string usuario) {
         try {
             Usuario u = context.usuarios
@@ -137,14 +139,30 @@ public class UsuarioController : ControllerBase {
         }
     }
 
+    [HttpGet("users")] //Uso para ADMIN
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    public async Task<ActionResult<Usuario>> obtenerTodos() {
+        try {
+            if(User.IsInRole("Admin")) {
+                var listaUsuarios = await context.usuarios
+                    .Include(x => x.rol)
+                    .ToListAsync();
+
+                return Ok(listaUsuarios);
+            }
+            return BadRequest("XD");
+        } catch (Exception ex) {
+            return BadRequest(ex.Message);
+        }
+    }
+
     //Log in
     [HttpPost("login")]
-    [AllowAnonymous]
     public async Task<IActionResult> login([FromForm] LoginView lView) {
         try {
             Usuario u = await context.usuarios
                 .Include(x => x.rol)
-                .FirstOrDefaultAsync(x => x.mail == lView.mail);
+                .FirstOrDefaultAsync(x => x.usuario == lView.usuario);
 
             string hashed = Convert.ToBase64String(KeyDerivation.Pbkdf2(
 				password: lView.pass,

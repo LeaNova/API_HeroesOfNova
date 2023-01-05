@@ -12,9 +12,9 @@ public class Personaje {
     public int razaId { get; set; }
     public int generoId { get; set; }
     public int claseId { get; set; }
-    public int vida { get; set; }
     public int nivel { get; set; }
     public int experiencia { get; set; }
+    public int vida { get; set; }
 
     //Estadisticas
     public int ataque { get; set; }
