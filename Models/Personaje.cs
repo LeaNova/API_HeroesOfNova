@@ -15,6 +15,7 @@ public class Personaje {
     public int nivel { get; set; }
     public int experiencia { get; set; }
     public int vida { get; set; }
+    public int energia { get; set; }
 
     //Estadisticas
     public int ataque { get; set; }

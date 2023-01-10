@@ -7,8 +7,8 @@ public class Raza {
     [Key]
     public int idRaza { get; set; }
     public string nombre { get; set; }
-    public string descripcion { get; set; }
     public int vidaBase { get; set; }
+    public int energiaBase { get; set; }
     public int baseAtk { get; set; } //Ataque
     public int baseAtm { get; set; } //Ataque magico
     public int baseDef { get; set; } //Defensa
@@ -17,4 +17,5 @@ public class Raza {
     public int baseEva { get; set; } //Evasion
     public int baseCrt { get; set; } //Critico
     public int baseAcc { get; set; } //Precision
+    public string descripcion { get; set; }
 }

@@ -35,7 +35,7 @@ public class RazaController : ControllerBase {
 
     //Baja
     [HttpDelete("borrar/{id}")]
-    public async Task<IActionResult> baja(int id) {
+    public async Task<IActionResult> borrar(int id) {
         try {
             Raza r = context.razas
                 .AsNoTracking()
@@ -83,7 +83,9 @@ public class RazaController : ControllerBase {
     [HttpGet("get")]
     public async Task<ActionResult<Raza>> obtener() {
         try {
-            var listaRaza = await context.razas.ToListAsync();
+            var listaRaza = await context.razas
+                .OrderBy(x => x.nombre)
+                .ToListAsync();
 
             return Ok(listaRaza);
         } catch (Exception ex) {

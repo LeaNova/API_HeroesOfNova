@@ -22,8 +22,7 @@ public class ParticipanteController: ControllerBase {
     public async Task<ActionResult> alta([FromForm] Participante p) {
         try {
             if(ModelState.IsValid) {
-                int id = Int32.Parse(User.Claims.First(x => x.Type == "id").Value);
-                p.usuarioId = id;
+                p.usuarioId = Int32.Parse(User.Claims.First(x => x.Type == "id").Value);
 
                 context.participantes.Add(p);
                 context.SaveChanges();
@@ -38,9 +37,10 @@ public class ParticipanteController: ControllerBase {
     }
 
     //Baja
-    [HttpDelete("borrar/g{grupoId}_u{usuarioId}")]
-    public async Task<IActionResult> baja(int grupoId, int usuarioId) {
+    [HttpDelete("borrar/grupo={grupoId}")]
+    public async Task<IActionResult> borrar(int grupoId) {
         try {
+            int usuarioId = Int32.Parse(User.Claims.First(x => x.Type == "id").Value);
             Participante p = context.participantes
                 .AsNoTracking()
                 .FirstOrDefault(x => x.grupoId == grupoId && x.usuarioId == usuarioId);
@@ -58,10 +58,11 @@ public class ParticipanteController: ControllerBase {
     }
 
     //Modificacion
-    [HttpPost("modificar/g{grupoId}_u{usuarioId}")]
-    public async Task<IActionResult> modificar([FromForm] Participante p, int grupoId, int usuarioId) {
+    [HttpPost("modificar/g{grupoId}_u")]
+    public async Task<IActionResult> modificar([FromForm] Participante p, int grupoId) {
         try {
             if(ModelState.IsValid) {
+                int usuarioId = Int32.Parse(User.Claims.First(x => x.Type == "id").Value);
                 Participante original = context.participantes
                     .AsNoTracking()
                     .FirstOrDefault(x => x.grupoId == grupoId && x.usuarioId == usuarioId);
@@ -101,7 +102,7 @@ public class ParticipanteController: ControllerBase {
     }
 
     [HttpGet("get/grupos")]
-    public async Task<ActionResult<Participante>> obtenerGrupos() {
+    public async Task<ActionResult<Participante>> obtenerMisGrupos() {
         try {
             int id = Int32.Parse(User.Claims.First(x => x.Type == "id").Value);
             var listaParticipantes = await context.participantes
@@ -115,6 +116,29 @@ public class ParticipanteController: ControllerBase {
                 foreach(Participante item in listaParticipantes) {
                     item.grupo.master = new UsuarioView(item.grupo.usuario);
                     item.grupo.usuario = null;
+                }
+                return Ok(listaParticipantes);
+            }
+            
+            return BadRequest("No hay resultados");
+        } catch (Exception ex) {
+            return BadRequest(ex.Message);
+        }
+    }
+
+    [HttpGet("get/grupo/{id}")]
+    public async Task<ActionResult<Participante>> obtenerParticipantesGrupo(int id) {
+        try {
+            var listaParticipantes = await context.participantes
+                .Include(x => x.usuario)
+                .Include(x => x.personaje)
+                .Where(x => x.grupoId == id)
+                .ToListAsync();
+
+            if(listaParticipantes.Count() > 0) {
+                foreach(Participante item in listaParticipantes) {
+                    item.jugador = new UsuarioView(item.usuario);
+                    item.usuario = null;
                 }
                 return Ok(listaParticipantes);
             }

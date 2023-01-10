@@ -38,10 +38,84 @@ public class GrupoController : ControllerBase {
     }
 
     //Baja - Baja logica
+    [HttpDelete("borrar/{id}")]
+    public async Task<IActionResult> borrar(int id) {
+        try {
+            int masterId = Int32.Parse(User.Claims.First(x => x.Type == "id").Value);
+
+            Grupo g = context.grupos
+                .AsNoTracking()
+                .FirstOrDefault(x => x.idGrupo == id && x.masterId == masterId);
+
+                if(g != null) {
+                    var participantes = context.participantes
+                        .AsNoTracking()
+                        .Where(x => x.grupoId == g.idGrupo)
+                        .ToList();
+                    
+                    context.participantes.RemoveRange(participantes);
+                    context.grupos.Remove(g);
+                    context.SaveChanges();
+
+                    return Ok();
+                }
+
+            return BadRequest("Error en borrar");
+        } catch (Exception ex) {
+            return BadRequest(ex.Message);
+        }
+    }
+
+    [HttpPost("baja/{id}")]
+    public async Task<ActionResult> baja(int id) {
+        try {
+            Grupo g = context.grupos
+                .AsNoTracking()
+                .FirstOrDefault(x => x.idGrupo == id);
+            
+            if(g != null) {
+                g.disponible = !g.disponible;
+
+                context.grupos.Update(g);
+                await context.SaveChangesAsync();
+
+                return Ok(g);
+            }
+
+            return BadRequest("Error en actualizar");
+        } catch (Exception ex) {
+            return BadRequest(ex.Message);
+        }
+    }
+
     //Modificacion
+    [HttpPost("modificar/{id}")]
+    public async Task<IActionResult> modificar([FromForm] Grupo g, int id) {
+        try {
+            if(ModelState.IsValid) {
+                Grupo original = context.grupos
+                    .AsNoTracking()
+                    .FirstOrDefault(x => x.idGrupo == id);
+
+                if(original != null) {
+                    g.idGrupo = id;
+                    g.masterId = Int32.Parse(User.Claims.First(x => x.Type == "id").Value);
+                    g.fechaCreado = DateTime.Now;
+
+                    context.grupos.Update(g);
+                    await context.SaveChangesAsync();
+
+                    return Ok(g);
+                }
+                return BadRequest("Objeto vacío");
+            }
+            return BadRequest("Error en actualizar");
+        } catch (Exception ex) {
+            return BadRequest(ex.Message);
+        }
+    }
 
     //Busquedas
-
     [HttpGet("get")] //Uso para ADMIN
     public async Task<ActionResult<Grupo>> obtener() {
         try {
@@ -83,10 +157,9 @@ public class GrupoController : ControllerBase {
     [HttpGet("get/{id}")]
     public async Task<ActionResult<Grupo>> obtenerId(int id) {
         try {
-            Grupo g = await context.grupos
+            Grupo g = context.grupos
                 .Include(x => x.usuario)
-                .Where(x => x.disponible)
-                .FirstOrDefaultAsync(x => x.idGrupo == id);
+                .FirstOrDefault(x => x.idGrupo == id);
             
             if(g != null) {
                 g.master = new UsuarioView(g.usuario);

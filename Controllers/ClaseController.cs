@@ -22,16 +22,8 @@ public class ClaseController : ControllerBase {
     public async Task<IActionResult> alta([FromForm] Clase c) {
         try {
             if(ModelState.IsValid) {
-                c.modVida = c.modVida > 100 ? c.modVida/100 : c.modVida/10;
-                c.modAtk = c.modAtk > 100 ? c.modAtk/100 : c.modAtk/10;
-                c.modAtm = c.modAtm > 100 ? c.modAtm/100 : c.modAtm/10;
-                c.modDef = c.modDef > 100 ? c.modDef/100 : c.modDef/10;
-                c.modDfm = c.modDfm > 100 ? c.modDfm/100 : c.modDfm/10;
-                c.modDex = c.modDex > 100 ? c.modDex/100 : c.modDex/10;
-                c.modEva = c.modEva > 100 ? c.modEva/100 : c.modEva/10;
-                c.modCrt = c.modCrt > 100 ? c.modCrt/100 : c.modCrt/10;
-                c.modAcc = c.modAcc > 100 ? c.modAcc/100 : c.modAcc/10;
-            
+                c = corregir(c);
+
                 context.clases.Add(c);
                 context.SaveChanges();
 
@@ -45,7 +37,7 @@ public class ClaseController : ControllerBase {
 
     //Baja
     [HttpDelete("borrar/{id}")]
-    public async Task<IActionResult> baja(int id) {
+    public async Task<IActionResult> borrar(int id) {
         try {
             Clase c = context.clases
                 .AsNoTracking()
@@ -73,8 +65,9 @@ public class ClaseController : ControllerBase {
                     .FirstOrDefault(x => x.idClase == id);
 
                 if(original != null) {
+                    c = corregir(c);
                     c.idClase = id;
-
+                     
                     context.clases.Update(c);
                     await context.SaveChangesAsync();
 
@@ -89,6 +82,19 @@ public class ClaseController : ControllerBase {
     }
 
     //Obtener
+    [HttpGet("get")]
+    public async Task<ActionResult<Clase>> obtener() {
+        try {
+            var listaClases = await context.clases
+                .OrderBy(x => x.nombre)
+                .ToListAsync();
+
+            return Ok(listaClases);
+        } catch (Exception ex) {
+            return BadRequest(ex.Message);
+        }
+    }
+
     [HttpGet("get/{id}")]
     public async Task<ActionResult<Clase>> obtenerId(int id) {
         try {
@@ -120,15 +126,19 @@ public class ClaseController : ControllerBase {
             return BadRequest(ex.Message);
         }
     }
-    
-    [HttpGet("get")]
-    public async Task<ActionResult<Clase>> obtener() {
-        try {
-            var listaClases = await context.clases.ToListAsync();
 
-            return Ok(listaClases);
-        } catch (Exception ex) {
-            return BadRequest(ex.Message);
-        }
+    public Clase corregir(Clase c) {
+        c.modVida = c.modVida > 100 ? c.modVida/100 : c.modVida/10;
+        c.modEnergia = c.modEnergia > 100 ? c.modEnergia/100 : c.modEnergia/10;
+        c.modAtk = c.modAtk > 100 ? c.modAtk/100 : c.modAtk/10;
+        c.modAtm = c.modAtm > 100 ? c.modAtm/100 : c.modAtm/10;
+        c.modDef = c.modDef > 100 ? c.modDef/100 : c.modDef/10;
+        c.modDfm = c.modDfm > 100 ? c.modDfm/100 : c.modDfm/10;
+        c.modDex = c.modDex > 100 ? c.modDex/100 : c.modDex/10;
+        c.modEva = c.modEva > 100 ? c.modEva/100 : c.modEva/10;
+        c.modCrt = c.modCrt > 100 ? c.modCrt/100 : c.modCrt/10;
+        c.modAcc = c.modAcc > 100 ? c.modAcc/100 : c.modAcc/10;
+
+        return c;
     }
 }

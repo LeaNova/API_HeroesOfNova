@@ -42,11 +42,9 @@ public class PersonajeController : ControllerBase {
     [HttpDelete("borrar/{id}")]
     public async Task<ActionResult> borrar(int id) {
         try {
+            int idUsuario = Int32.Parse(User.Claims.First(x => x.Type == "id").Value);
             Personaje p = await context.personajes
-            .Include(x => x.raza)
-            .Include(x => x.genero)
-            .Include(x => x.mochila)
-            .FirstOrDefaultAsync(x => x.idPersonaje == id);
+            .FirstOrDefaultAsync(x => x.idPersonaje == id && x.usuarioId == idUsuario);
             
             if(p != null) {
                 context.personajes.Remove(p);
@@ -56,6 +54,29 @@ public class PersonajeController : ControllerBase {
             }
 
             return BadRequest("Objeto vacío");
+        } catch (Exception ex) {
+            return BadRequest(ex.Message);
+        }
+    }
+
+    [HttpPost("baja/{id}")]
+    public async Task<ActionResult> baja(int id) {
+        try {
+            int idUsuario = Int32.Parse(User.Claims.First(x => x.Type == "id").Value);
+            Personaje p = context.personajes
+                .AsNoTracking()
+                .FirstOrDefault(x => x.idPersonaje == id && x.usuarioId == idUsuario);
+
+            if(p != null) {
+                p.disponible = !p.disponible;
+
+                context.personajes.Update(p);
+                await context.SaveChangesAsync();
+
+                return Ok(p);
+            }
+
+            return BadRequest("Error en actualizar");
         } catch (Exception ex) {
             return BadRequest(ex.Message);
         }

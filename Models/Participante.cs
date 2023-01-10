@@ -12,7 +12,7 @@ public class Participante {
     [ForeignKey(nameof(usuarioId))]
     public Usuario? usuario { get; set; }
     [NotMapped]
-    public UsuarioView jugador { get; set; }
+    public UsuarioView? jugador { get; set; }
     [ForeignKey(nameof(personajeId))]
     public Personaje? personaje { get; set; }
     

@@ -35,7 +35,7 @@ public class GeneroController : ControllerBase {
 
     //Baja
     [HttpDelete("borrar/{id}")]
-    public async Task<IActionResult> baja(int id) {
+    public async Task<IActionResult> borrar(int id) {
         try {
             Genero g = context.generos
                 .AsNoTracking()
