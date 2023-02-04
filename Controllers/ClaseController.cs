@@ -56,7 +56,7 @@ public class ClaseController : ControllerBase {
     }
 
     //Modificar
-    [HttpPost("modificar/{id}")]
+    [HttpPut("modificar/{id}")]
     public async Task<IActionResult> modificar([FromForm] Clase c, int id) {
         try {
             if(ModelState.IsValid) {

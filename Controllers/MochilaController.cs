@@ -55,7 +55,7 @@ public class MochilaController : ControllerBase {
     }
 
     //Modificacion
-    [HttpPost("modificar/{id}")]
+    [HttpPut("modificar/{id}")]
     public async Task<IActionResult> modificar([FromForm] Mochila m, int id) {
         try {
             if(ModelState.IsValid) {

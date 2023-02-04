@@ -9,7 +9,6 @@ namespace API_HeroesOfNova;
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
 [Route("personaje")]
 public class PersonajeController : ControllerBase {
-
     private readonly DataContext context;
     private readonly IConfiguration configuration;
 
@@ -25,9 +24,11 @@ public class PersonajeController : ControllerBase {
             if(ModelState.IsValid) {
                 p.usuarioId = Int32.Parse(User.Claims.First(x => x.Type == "id").Value);
                 p.fechaCreado = DateTime.Now;
-                
+
                 context.personajes.Add(p);
                 context.SaveChanges();
+
+                await setEquipamiento(p);
 
                 return CreatedAtAction(nameof(obtenerId), new { id = p.idPersonaje }, p);
             }
@@ -53,13 +54,13 @@ public class PersonajeController : ControllerBase {
                 return Ok();
             }
 
-            return BadRequest("Objeto vacío");
+            return BadRequest("Error en borrar");
         } catch (Exception ex) {
             return BadRequest(ex.Message);
         }
     }
 
-    [HttpPost("baja/{id}")]
+    [HttpPut("baja/{id}")]
     public async Task<ActionResult> baja(int id) {
         try {
             int idUsuario = Int32.Parse(User.Claims.First(x => x.Type == "id").Value);
@@ -83,6 +84,72 @@ public class PersonajeController : ControllerBase {
     }
 
     //Modificacion
+    [HttpPut("modificar/{idPersonaje}")]
+    public async Task<ActionResult<Personaje>> modificar([FromForm] PersonajeUpdate personajeU, int idPersonaje) {
+        try {
+            if(ModelState.IsValid) {
+                int usuarioId = Int32.Parse(User.Claims.First(x => x.Type == "id").Value);
+                Personaje original = context.personajes
+                    .AsNoTracking()
+                    .FirstOrDefault(x => x.idPersonaje == idPersonaje && x.usuarioId == usuarioId);
+
+                if(original != null) {
+                    original.nombre = personajeU.nombre;
+                    original.razaId = personajeU.razaId;
+                    original.generoId = personajeU.generoId;
+                    original.claseId = personajeU.claseId;
+
+                    context.personajes.Update(original);
+                    await context.SaveChangesAsync();
+
+                    return Ok(original);
+                }
+
+                return BadRequest("Objeto vacío");
+            }
+            return BadRequest("Error en actualizar");
+        } catch (Exception ex) {
+            return BadRequest(ex.Message);
+        }
+    }
+
+    [HttpPost("finalizar/{idPersonaje}")]
+    public async Task<ActionResult<Personaje>> finalizar([FromForm] PersonajeFinalizar personajeF, int idPersonaje) {
+        try {
+            if(ModelState.IsValid) {
+                int usuarioId = Int32.Parse(User.Claims.First(x => x.Type == "id").Value);
+                Personaje original = context.personajes
+                    .AsNoTracking()
+                    .FirstOrDefault(x => x.idPersonaje == idPersonaje && x.usuarioId == usuarioId);
+
+                if(original != null) {
+                    original.nivel = personajeF.nivel;
+                    original.experiencia = personajeF.experiencia;
+                    original.vida = personajeF.vida;
+                    original.energia = personajeF.energia;
+                    original.ataque = personajeF.ataque;
+                    original.atkMagico = personajeF.atkMagico;
+                    original.defensa = personajeF.defensa;
+                    original.defMagico = personajeF.defMagico;
+                    original.agilidad = personajeF.agilidad;
+                    original.evasion = personajeF.evasion;
+                    original.critico = personajeF.critico;
+                    original.precision = personajeF.precision;
+                    original.mochilaId = personajeF.mochilaId;
+
+                    context.personajes.Update(original);
+                    await context.SaveChangesAsync();
+
+                    return Ok(original);
+                }
+
+                return BadRequest("Objeto vacío");
+            }
+            return BadRequest("Error en finalizar");
+        } catch (Exception ex) {
+            return BadRequest(ex.Message);
+        }
+    }
 
     //Busquedas
     [HttpGet("get")]
@@ -119,6 +186,22 @@ public class PersonajeController : ControllerBase {
 
             return BadRequest("Objeto vacío");
         } catch (Exception ex) {
+            return BadRequest(ex.Message);
+        }
+    }
+
+    private async Task<IActionResult> setEquipamiento(Personaje personaje) {
+        try {
+            InvArmadura invArmadura = new InvArmadura(personaje.mochilaId, personaje.idPersonaje, 1, 1);
+            InvArma invArma = new InvArma(personaje.mochilaId, personaje.idPersonaje, 1, 1);
+
+            context.invArmaduras.Add(invArmadura);
+            context.invArmas.Add(invArma);
+
+            context.SaveChanges();
+
+            return Ok();
+        } catch(Exception ex) {
             return BadRequest(ex.Message);
         }
     }

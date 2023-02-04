@@ -7,25 +7,26 @@ namespace API_HeroesOfNova;
 
 [ApiController]
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-[Route("raza")]
-public class RazaController : ControllerBase {
+[Route("armadura")]
+public class ArmaduraController : ControllerBase {
     private readonly DataContext context;
     private readonly IConfiguration configuration;
 
-    public RazaController(DataContext context, IConfiguration configuration) {
+    public ArmaduraController(DataContext context, IConfiguration configuration) {
         this.context = context;
         this.configuration = configuration;
     }
 
     //Alta
     [HttpPost("crear")]
-    public async Task<IActionResult> alta([FromForm] Raza r) {
+    public async Task<IActionResult> Alta([FromForm] Armadura a) {
         try {
             if(ModelState.IsValid) {
-                context.razas.Add(r);
+                a = corregir(a);
+                context.armaduras.Add(a);
                 context.SaveChanges();
                 
-                return CreatedAtAction(nameof(obtenerId), new { id = r.idRaza }, r);
+                return CreatedAtAction(nameof(obtenerId), new { id = a.idArmadura }, a);
             }
             return BadRequest("Error en crear");
         } catch (Exception ex) {
@@ -37,12 +38,12 @@ public class RazaController : ControllerBase {
     [HttpDelete("borrar/{id}")]
     public async Task<IActionResult> borrar(int id) {
         try {
-            Raza r = context.razas
+            Armadura a = context.armaduras
                 .AsNoTracking()
-                .FirstOrDefault(x => x.idRaza == id);
+                .FirstOrDefault(x => x.idArmadura == id);
 
-            if(r != null) {
-                context.razas.Remove(r);
+            if(a != null) {
+                context.armaduras.Remove(a);
                 context.SaveChanges();
 
                 return Ok();
@@ -56,20 +57,21 @@ public class RazaController : ControllerBase {
 
     //Modificacion
     [HttpPut("modificar/{id}")]
-    public async Task<IActionResult> modificar([FromForm] Raza r, int id) {
+    public async Task<IActionResult> modificar([FromForm] Armadura a, int id) {
         try {
             if(ModelState.IsValid) {
-                Raza original = context.razas
+                Armadura original = context.armaduras
                     .AsNoTracking()
-                    .FirstOrDefault(x => x.idRaza == id);
+                    .FirstOrDefault(x => x.idArmadura == id);
                 
                 if(original != null) {
-                    r.idRaza = id;
+                    a = corregir(a);
+                    a.idArmadura = id;
 
-                    context.razas.Update(r);
+                    context.armaduras.Update(a);
                     await context.SaveChangesAsync();
 
-                    return Ok(r);
+                    return Ok(a);
                 }
                 return BadRequest("Objeto vacío");
             }
@@ -79,28 +81,26 @@ public class RazaController : ControllerBase {
         }
     }
 
-    //Obtener
+    //Busquedas
     [HttpGet("get")]
-    public async Task<ActionResult<Raza>> obtener() {
+    public async Task<ActionResult<Armadura>> obtener() {
         try {
-            var listaRaza = await context.razas
-                .OrderBy(x => x.nombre)
-                .ToListAsync();
+            var listaArmaduras = await context.armaduras.ToListAsync();
 
-            return Ok(listaRaza);
+            return Ok(listaArmaduras);
         } catch (Exception ex) {
             return BadRequest(ex.Message);
         }
     }
 
     [HttpGet("get/{id}")]
-    public async Task<ActionResult<Raza>> obtenerId(int id) {
+    public async Task<ActionResult<Armadura>> obtenerId(int id) {
         try {
-            Raza r = context.razas
-                .FirstOrDefault(x => x.idRaza == id);
-            
-            if(r != null) {
-                return Ok(r);
+            Armadura a = context.armaduras
+                .FirstOrDefault(x => x.idArmadura == id);
+
+            if(a != null) {
+                return Ok(a);
             }
 
             return BadRequest("Objeto vacío");
@@ -109,19 +109,11 @@ public class RazaController : ControllerBase {
         }
     }
 
-    [HttpGet("check_nombre/{nombre}")]
-    public async Task<ActionResult<Raza>> obtenerNombre(string nombre) {
-        try {
-            Raza r = context.razas
-                .FirstOrDefault(x => x.nombre == nombre);
-            
-            if(r != null) {
-                return Ok(r);
-            }
+    private Armadura corregir(Armadura a) {
+        a.modDef = a.modDef > 100 ? a.modDef/100 : a.modDef/10;
+        a.modDfm = a.modDfm > 100 ? a.modDfm/100 : a.modDfm/10;
+        a.peso = a.peso > 100 ? a.peso/100 : a.peso/10;
 
-            return BadRequest("Objeto vacío");
-        } catch (Exception ex) {
-            return BadRequest(ex.Message);
-        }
+        return a;
     }
 }
