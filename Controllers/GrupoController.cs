@@ -66,7 +66,7 @@ public class GrupoController : ControllerBase {
         }
     }
 
-    [HttpPost("baja/{id}")]
+    [HttpPut("baja/{id}")]
     public async Task<ActionResult> baja(int id) {
         try {
             Grupo g = context.grupos
@@ -89,7 +89,7 @@ public class GrupoController : ControllerBase {
     }
 
     //Modificacion
-    [HttpPost("modificar/{id}")]
+    [HttpPut("modificar/{id}")]
     public async Task<IActionResult> modificar([FromForm] Grupo g, int id) {
         try {
             if(ModelState.IsValid) {
@@ -179,7 +179,7 @@ public class GrupoController : ControllerBase {
             var listaGrupos = context.grupos
                 .Include(x => x.usuario)
                 .Where(x => x.disponible)
-                .Where(x => x.nombre.StartsWith(nombre));
+                .Where(x => x.nombre.Contains(nombre));
             
             if(listaGrupos.Count() > 0) {
                 foreach(Grupo item in listaGrupos) {

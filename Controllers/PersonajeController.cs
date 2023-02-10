@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -44,11 +45,36 @@ public class PersonajeController : ControllerBase {
     public async Task<ActionResult> borrar(int id) {
         try {
             int idUsuario = Int32.Parse(User.Claims.First(x => x.Type == "id").Value);
-            Personaje p = await context.personajes
-            .FirstOrDefaultAsync(x => x.idPersonaje == id && x.usuarioId == idUsuario);
+            Personaje p = await context.personajes.FirstOrDefaultAsync(x => x.idPersonaje == id && x.usuarioId == idUsuario);
             
             if(p != null) {
+                var participo = context.participantes
+                    .FirstOrDefault(x => x.usuarioId == idUsuario && x.personajeId == p.idPersonaje);
+
+                var armaduras = context.invArmaduras
+                    .Where(x => x.personajeId == p.idPersonaje)
+                    .ToList();
+
+                var armas = context.invArmas
+                    .Where(x => x.personajeId == p.idPersonaje)
+                    .ToList();
+
+                var items = context.invItems
+                    .Where(x => x.personajeId == p.idPersonaje)
+                    .ToList();
+                    
+                var artefactos = context.invArtefactos
+                    .Where(x => x.personajeId == p.idPersonaje)
+                    .ToList();
+
+                if(participo != null) context.participantes.Remove(participo);
+
+                context.invArmaduras.RemoveRange(armaduras);
+                context.invArmas.RemoveRange(armas);
+                context.invItems.RemoveRange(items);
+                context.invArtefactos.RemoveRange(artefactos);
                 context.personajes.Remove(p);
+
                 context.SaveChanges();
 
                 return Ok();
@@ -113,7 +139,7 @@ public class PersonajeController : ControllerBase {
         }
     }
 
-    [HttpPost("finalizar/{idPersonaje}")]
+    [HttpPut("finalizar/{idPersonaje}")]
     public async Task<ActionResult<Personaje>> finalizar([FromForm] PersonajeFinalizar personajeF, int idPersonaje) {
         try {
             if(ModelState.IsValid) {
@@ -151,6 +177,31 @@ public class PersonajeController : ControllerBase {
         }
     }
 
+    [HttpPut("cambiar_mochila/{idPersonaje}")]
+    public async Task<ActionResult<Personaje>> cambiarMochila([FromForm] int mochilaId, int idPersonaje) {
+        try {
+            int usuarioId = Int32.Parse(User.Claims.First(x => x.Type == "id").Value);
+            Personaje original = context.personajes
+                .AsNoTracking()
+                .FirstOrDefault(x => x.idPersonaje == idPersonaje && x.usuarioId == usuarioId);
+
+            if(original != null) {
+                original.mochilaId = mochilaId;
+
+                context.personajes.Update(original);
+                await context.SaveChangesAsync();
+
+                //cambiarTodo(idPersonaje, mochilaId);
+
+                return Ok(original);
+            }
+            
+            return BadRequest("Objeto vacío");
+        } catch (Exception ex) {
+            return BadRequest(ex.Message);
+        }
+    }
+
     //Busquedas
     [HttpGet("get")]
     public async Task<ActionResult<Personaje>> obtener() {
@@ -158,11 +209,11 @@ public class PersonajeController : ControllerBase {
             int id = Int32.Parse(User.Claims.First(x => x.Type == "id").Value);
 
             var listaPersonajes = context.personajes
-            .Include(x => x.raza)
-            .Include(x => x.genero)
-            .Include(x => x.clase)
-            .Include(x => x.mochila)
-            .Where(x => x.usuarioId == id);
+                .Include(x => x.raza)
+                .Include(x => x.genero)
+                .Include(x => x.clase)
+                .Include(x => x.mochila)
+                .Where(x => x.usuarioId == id);
             
             return Ok(listaPersonajes);
         } catch (Exception ex) {
@@ -174,11 +225,11 @@ public class PersonajeController : ControllerBase {
     public async Task<ActionResult<Personaje>> obtenerId(int id) {
         try {
             Personaje p = await context.personajes
-            .Include(x => x.raza)
-            .Include(x => x.genero)
-            .Include(x => x.clase)
-            .Include(x => x.mochila)
-            .FirstOrDefaultAsync(x => x.idPersonaje == id);
+                .Include(x => x.raza)
+                .Include(x => x.genero)
+                .Include(x => x.clase)
+                .Include(x => x.mochila)
+                .FirstOrDefaultAsync(x => x.idPersonaje == id);
             
             if(p != null) {
                 return Ok(p);
@@ -194,9 +245,15 @@ public class PersonajeController : ControllerBase {
         try {
             InvArmadura invArmadura = new InvArmadura(personaje.mochilaId, personaje.idPersonaje, 1, 1);
             InvArma invArma = new InvArma(personaje.mochilaId, personaje.idPersonaje, 1, 1);
+            var listaArtefactos = new List<InvArtefacto>();
+            listaArtefactos.Add(new InvArtefacto(personaje.mochilaId, personaje.idPersonaje, 1, 1));
+            listaArtefactos.Add(new InvArtefacto(personaje.mochilaId, personaje.idPersonaje, 2, 1));
+            listaArtefactos.Add(new InvArtefacto(personaje.mochilaId, personaje.idPersonaje, 3, 1));
+            listaArtefactos.Add(new InvArtefacto(personaje.mochilaId, personaje.idPersonaje, 4, 1));
 
             context.invArmaduras.Add(invArmadura);
             context.invArmas.Add(invArma);
+            context.invArtefactos.AddRange(listaArtefactos);
 
             context.SaveChanges();
 

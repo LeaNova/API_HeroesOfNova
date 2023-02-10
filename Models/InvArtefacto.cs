@@ -2,21 +2,20 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace API_HeroesOfNova;
 
-public class InvArmadura {
-    public InvArmadura() {}
-    public InvArmadura(int mochilaId, int personajeId, int armaduraId, int cantidad) {
+public class InvArtefacto {
+    public InvArtefacto() {}
+    public InvArtefacto(int mochilaId, int personajeId, int artefactoId, int cantidad) {
         this.mochilaId = mochilaId;
         this.personajeId = personajeId;
-        this.armaduraId = armaduraId;
+        this.artefactoId = artefactoId;
         this.cantidad = cantidad;
     }
 
     public int mochilaId { get; set; }
     public int personajeId { get; set; }
-    public int armaduraId { get; set; }
+    public int artefactoId { get; set; }
     public int cantidad { get; set; }
     //Clases foráneas
-    [ForeignKey(nameof(armaduraId))]
-    public Armadura? armadura { get; set; }
-
+    [ForeignKey(nameof(artefactoId))]
+    public Artefacto? artefacto { get; set; }
 }

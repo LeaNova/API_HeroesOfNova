@@ -20,22 +20,25 @@ public class DataContext : DbContext {
     public DbSet<Grupo> grupos { get; set; }
     public DbSet<Participante> participantes { get; set; }
 
-    //Contexto de Armas, Armaduras, Items y demás
+    //Contexto de Armas, Armaduras, Items y Artefactos
     public DbSet<Arma> armas { get; set; }
     public DbSet<Categoria> categorias { get; set; }
     public DbSet<Armadura> armaduras { get; set; }
     public DbSet<Item> items { get; set; }
     public DbSet<Tipo> tipos { get; set; }
+    public DbSet<Artefacto> artefactos { get; set; }
+    public DbSet<Seccion> secciones { get; set; }
     public DbSet<InvArma> invArmas { get; set; }
     public DbSet<InvArmadura> invArmaduras { get; set; }
     public DbSet<InvItem> invItems { get; set; }
+    public DbSet<InvArtefacto> invArtefactos { get; set; }
 
-    //Setteo de doble Key
+    //Setteo de varias Key
     protected override void OnModelCreating(ModelBuilder modelBuilder) {
         modelBuilder.Entity<Participante>().HasKey(par => new { par.grupoId, par.usuarioId });
         modelBuilder.Entity<InvArma>().HasKey(invWpn => new { invWpn.mochilaId, invWpn.personajeId, invWpn.armaId });
         modelBuilder.Entity<InvArmadura>().HasKey(invArm => new { invArm.mochilaId, invArm.personajeId, invArm.armaduraId });
         modelBuilder.Entity<InvItem>().HasKey(invItm => new { invItm.mochilaId, invItm.personajeId, invItm.itemId });
+        modelBuilder.Entity<InvArtefacto>().HasKey(invArt => new { invArt.mochilaId, invArt.personajeId, invArt.artefactoId});
     }
-
 }

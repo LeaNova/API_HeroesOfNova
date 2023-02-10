@@ -7,26 +7,27 @@ namespace API_HeroesOfNova;
 
 [ApiController]
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-[Route("armadura")]
-public class ArmaduraController : ControllerBase {
+[Route("artefacto")]
+
+public class ArtefactoController : ControllerBase {
     private readonly DataContext context;
     private readonly IConfiguration configuration;
 
-    public ArmaduraController(DataContext context, IConfiguration configuration) {
+    public ArtefactoController(DataContext context, IConfiguration configuration) {
         this.context = context;
         this.configuration = configuration;
     }
 
     //Alta
     [HttpPost("crear")]
-    public async Task<IActionResult> alta([FromForm] Armadura a) {
+    public async Task<IActionResult> alta([FromForm] Artefacto a) {
         try {
             if(ModelState.IsValid) {
                 a = corregir(a);
-                context.armaduras.Add(a);
+                context.artefactos.Add(a);
                 context.SaveChanges();
-                
-                return CreatedAtAction(nameof(obtenerId), new { id = a.idArmadura }, a);
+
+                return CreatedAtAction(nameof(obtenerId), new { id = a.idArtefacto }, a);
             }
             return BadRequest("Error en crear");
         } catch (Exception ex) {
@@ -38,12 +39,12 @@ public class ArmaduraController : ControllerBase {
     [HttpDelete("borrar/{id}")]
     public async Task<IActionResult> borrar(int id) {
         try {
-            Armadura a = context.armaduras
+            Artefacto a = context.artefactos
                 .AsNoTracking()
-                .FirstOrDefault(x => x.idArmadura == id);
+                .FirstOrDefault(x => x.idArtefacto == id);
 
             if(a != null) {
-                context.armaduras.Remove(a);
+                context.artefactos.Remove(a);
                 context.SaveChanges();
 
                 return Ok();
@@ -57,18 +58,19 @@ public class ArmaduraController : ControllerBase {
 
     //Modificacion
     [HttpPut("modificar/{id}")]
-    public async Task<IActionResult> modificar([FromForm] Armadura a, int id) {
+    public async Task<IActionResult> modificar([FromForm] Artefacto a, int id) {
         try {
             if(ModelState.IsValid) {
-                Armadura original = context.armaduras
+                Artefacto original = context.artefactos
                     .AsNoTracking()
-                    .FirstOrDefault(x => x.idArmadura == id);
-                
+                    .FirstOrDefault(x => x.idArtefacto == id);
+
                 if(original != null) {
                     a = corregir(a);
-                    a.idArmadura = id;
+                    a.idArtefacto = id;
+                    a.seccionId = original.seccionId;
 
-                    context.armaduras.Update(a);
+                    context.artefactos.Update(a);
                     await context.SaveChangesAsync();
 
                     return Ok(a);
@@ -83,24 +85,26 @@ public class ArmaduraController : ControllerBase {
 
     //Busquedas
     [HttpGet("get")]
-    public async Task<ActionResult<Armadura>> obtener() {
+    public async Task<ActionResult<Artefacto>> obtener() {
         try {
-            var listaArmaduras = await context.armaduras
+            var listaArtefactos = await context.artefactos
+                .Include(x => x.seccion)
                 .OrderBy(x => x.nombre)
                 .ToListAsync();
-
-            return Ok(listaArmaduras);
+            
+            return Ok(listaArtefactos);
         } catch (Exception ex) {
             return BadRequest(ex.Message);
         }
     }
 
     [HttpGet("get/{id}")]
-    public async Task<ActionResult<Armadura>> obtenerId(int id) {
+    public async Task<ActionResult<Artefacto>> obtenerId(int id) {
         try {
-            Armadura a = context.armaduras
-                .FirstOrDefault(x => x.idArmadura == id);
-
+            Artefacto a = context.artefactos
+                .Include(x => x.seccion)
+                .FirstOrDefault(x => x.idArtefacto == id);
+            
             if(a != null) {
                 return Ok(a);
             }
@@ -112,14 +116,15 @@ public class ArmaduraController : ControllerBase {
     }
 
     [HttpGet("search/{nombre}")]
-    public async Task<ActionResult<Armadura>> obtenerBusqueda(string nombre) {
+    public async Task<ActionResult<Artefacto>> obtenerBusqueda(string nombre) {
         try {
-            var listaArmaduras = await context.armaduras
+            var listaArtefactos = await context.artefactos
                 .Where(x => x.nombre.Contains(nombre))
+                .Include(x => x.seccion)
                 .ToListAsync();
 
-            if(listaArmaduras.Count() > 0) {
-                return Ok(listaArmaduras);
+            if(listaArtefactos.Count() > 0) {
+                return Ok(listaArtefactos);
             }
 
             return BadRequest("Sin resultados");
@@ -129,24 +134,22 @@ public class ArmaduraController : ControllerBase {
     }
 
     [HttpGet("check/{nombre}")]
-    public async Task<ActionResult<Armadura>> check(string nombre) {
+    public async Task<ActionResult<Artefacto>> check(string nombre) {
         try {
-            Armadura a = context.armaduras
+            Artefacto a = context.artefactos
                 .FirstOrDefault(x => x.nombre == nombre);
-
+            
             if(a != null) {
                 return Ok(a);
             }
-
+            
             return BadRequest("Objeto vacío");
         } catch (Exception ex) {
             return BadRequest(ex.Message);
         }
     }
 
-    private Armadura corregir(Armadura a) {
-        a.modDef = a.modDef > 100 ? a.modDef/100 : a.modDef/10;
-        a.modDfm = a.modDfm > 100 ? a.modDfm/100 : a.modDfm/10;
+    private Artefacto corregir(Artefacto a) {
         a.peso = a.peso > 100 ? a.peso/100 : a.peso/10;
 
         return a;

@@ -22,6 +22,14 @@ public class InvArmaduraController : ControllerBase {
     public async Task<IActionResult> alta([FromForm] InvArmadura invArmadura) {
         try {
             if(ModelState.IsValid) {
+                InvArmadura original = context.invArmaduras
+                    .FirstOrDefault(x => x.personajeId == invArmadura.personajeId && x.armaduraId == invArmadura.armaduraId);
+
+                if(original != null) {
+                    await añadir(original, invArmadura.cantidad);
+
+                    return Ok();
+                }
 
                 context.invArmaduras.Add(invArmadura);
                 context.SaveChanges();
@@ -58,11 +66,11 @@ public class InvArmaduraController : ControllerBase {
     //Modificar
 
     //Obtener
-    [HttpGet("get/personaje={personajeId}")]
-    public async Task<ActionResult<InvArmadura>> obtenerMisArmaduras(int personajeId) {
+    [HttpGet("get/mochila={mochilaId}/personaje={personajeId}")]
+    public async Task<ActionResult<InvArmadura>> obtenerMisArmaduras(int mochilaId, int personajeId) {
         try {
             var listaArmaduras = context.invArmaduras
-                .Where(x => x.personajeId == personajeId)
+                .Where(x => x.mochilaId == mochilaId && x.personajeId == personajeId)
                 .Include(x => x.armadura)
                 .ToList();
 
@@ -71,6 +79,19 @@ public class InvArmaduraController : ControllerBase {
             }
             
             return BadRequest("Sin armaduras");
+        } catch (Exception ex) {
+            return BadRequest(ex.Message);
+        }
+    }
+
+    public async Task<IActionResult> añadir(InvArmadura invArmadura, int cantidad) {
+        try {
+            invArmadura.cantidad += cantidad;
+
+            context.invArmaduras.Update(invArmadura);
+            context.SaveChanges();
+
+            return Ok();
         } catch (Exception ex) {
             return BadRequest(ex.Message);
         }

@@ -67,6 +67,7 @@ public class ArmaController : ControllerBase {
                 if(original != null) {
                     a = corregir(a);
                     a.idArma = id;
+                    a.categoriaId = original.categoriaId;
 
                     context.armas.Update(a);
                     await context.SaveChangesAsync();
@@ -87,6 +88,7 @@ public class ArmaController : ControllerBase {
         try {
             var listaArmas = await context.armas
                 .Include(x => x.categoria)
+                .OrderBy(x => x.nombre)
                 .ToListAsync();
 
             return Ok(listaArmas);
@@ -112,8 +114,26 @@ public class ArmaController : ControllerBase {
         }
     }
 
-    [HttpGet("check_nombre/{nombre}")]
-    public async Task<ActionResult<Arma>> obtenerNombre(string nombre) {
+    [HttpGet("search/{nombre}")]
+    public async Task<ActionResult<Arma>> obtenerBusqueda(string nombre) {
+        try {
+            var listaArmas = await context.armas
+                .Where(x => x.nombre.Contains(nombre))
+                .Include(x => x.categoria)
+                .ToListAsync();
+
+            if(listaArmas.Count() > 0) {
+                return Ok(listaArmas);
+            }
+
+            return BadRequest("Sin resultados");
+        } catch (Exception ex) {
+            return BadRequest(ex.Message);
+        }
+    }
+
+    [HttpGet("check/{nombre}")]
+    public async Task<ActionResult<Arma>> check(string nombre) {
         try {
             Arma a = context.armas
                 .FirstOrDefault(x => x.nombre == nombre);

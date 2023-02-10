@@ -1,3 +1,4 @@
+using System.Collections;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -67,6 +68,7 @@ public class ItemController : ControllerBase {
                 if(original != null) {
                     i = corregir(i);
                     i.idItem = id;
+                    i.tipoId = original.tipoId;
 
                     context.items.Update(i);
                     await context.SaveChangesAsync();
@@ -87,6 +89,7 @@ public class ItemController : ControllerBase {
         try {
             var listaItems = await context.items
                 .Include(x => x.tipo)
+                .OrderBy(x => x.nombre)
                 .ToListAsync();
 
             return Ok(listaItems);
@@ -102,27 +105,45 @@ public class ItemController : ControllerBase {
                 .Include(x => x.tipo)
                 .FirstOrDefault(x => x.idItem == id);
             
-            if(i != null) {
-                return Ok(i);
+            if(i == null) {
+                return BadRequest("Objeto vacío");
             }
 
-            return BadRequest("Objeto vacío");
+            return Ok(i);
         } catch (Exception ex) {
             return BadRequest(ex.Message);
         }
     }
 
-    [HttpGet("check_nombre/{nombre}")]
-    public async Task<ActionResult<Item>> obtenerNombre(string nombre) {
+    [HttpGet("search/{nombre}")]
+    public async Task<ActionResult<Item>> obtenerBusqueda(string nombre) {
+        try {
+            var listaItems = await context.items
+                .Include(x => x.tipo)
+                .Where(x => x.nombre.Contains(nombre))
+                .ToListAsync();
+
+            if(listaItems.Count() < 0) {
+                return BadRequest("Sin resultados");
+            }
+
+            return Ok(listaItems);
+        } catch (Exception ex) {
+            return BadRequest(ex.Message);
+        }
+    }
+
+    [HttpGet("check/{nombre}")]
+    public async Task<ActionResult<Item>> check(string nombre) {
         try {
             Item i = context.items
                 .FirstOrDefault(x => x.nombre == nombre);
             
-            if(i != null) {
-                return Ok(i);
+            if(i == null) {
+                return BadRequest("Objeto vacío");
             }
 
-            return BadRequest("Objeto vacío");
+            return Ok(i);
         } catch (Exception ex) {
             return BadRequest(ex.Message);
         }
