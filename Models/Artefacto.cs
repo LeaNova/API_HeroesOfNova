@@ -23,6 +23,7 @@ public class Artefacto{
     public int precio { get; set; }
     public float peso { get; set; }
     public string descripcion { get; set; }
+    public bool disponible { get; set; }
     //Clases foráneas
     [ForeignKey(nameof(seccionId))]
     public Seccion? seccion { get; set; }

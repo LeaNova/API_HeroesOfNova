@@ -67,7 +67,7 @@ public class GrupoController : ControllerBase {
     }
 
     [HttpPut("baja/{id}")]
-    public async Task<ActionResult> baja(int id) {
+    public async Task<ActionResult<Grupo>> baja(int id) {
         try {
             Grupo g = context.grupos
                 .AsNoTracking()

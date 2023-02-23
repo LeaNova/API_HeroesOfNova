@@ -29,8 +29,6 @@ public class PersonajeController : ControllerBase {
                 context.personajes.Add(p);
                 context.SaveChanges();
 
-                await setEquipamiento(p);
-
                 return CreatedAtAction(nameof(obtenerId), new { id = p.idPersonaje }, p);
             }
 
@@ -237,28 +235,6 @@ public class PersonajeController : ControllerBase {
 
             return BadRequest("Objeto vacío");
         } catch (Exception ex) {
-            return BadRequest(ex.Message);
-        }
-    }
-
-    private async Task<IActionResult> setEquipamiento(Personaje personaje) {
-        try {
-            InvArmadura invArmadura = new InvArmadura(personaje.mochilaId, personaje.idPersonaje, 1, 1);
-            InvArma invArma = new InvArma(personaje.mochilaId, personaje.idPersonaje, 1, 1);
-            var listaArtefactos = new List<InvArtefacto>();
-            listaArtefactos.Add(new InvArtefacto(personaje.mochilaId, personaje.idPersonaje, 1, 1));
-            listaArtefactos.Add(new InvArtefacto(personaje.mochilaId, personaje.idPersonaje, 2, 1));
-            listaArtefactos.Add(new InvArtefacto(personaje.mochilaId, personaje.idPersonaje, 3, 1));
-            listaArtefactos.Add(new InvArtefacto(personaje.mochilaId, personaje.idPersonaje, 4, 1));
-
-            context.invArmaduras.Add(invArmadura);
-            context.invArmas.Add(invArma);
-            context.invArtefactos.AddRange(listaArtefactos);
-
-            context.SaveChanges();
-
-            return Ok();
-        } catch(Exception ex) {
             return BadRequest(ex.Message);
         }
     }

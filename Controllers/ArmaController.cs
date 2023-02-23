@@ -55,6 +55,28 @@ public class ArmaController : ControllerBase {
         }
     }
 
+    [HttpPut("baja/{id}")]
+    public async Task<ActionResult<Arma>> baja(int id) {
+        try {
+            Arma a = context.armas
+                .AsNoTracking()
+                .FirstOrDefault(x => x.idArma == id);
+
+            if(a != null) {
+                a.disponible = !a.disponible;
+
+                context.armas.Update(a);
+                context.SaveChanges();
+
+                return Ok(a);
+            }
+
+            return BadRequest("Error en actualizar");
+        } catch (Exception ex) {
+            return BadRequest(ex.Message);
+        }
+    }
+
     //Modificacion
     [HttpPut("modificar/{id}")]
     public async Task<IActionResult> modificar([FromForm] Arma a, int id) {
@@ -86,10 +108,20 @@ public class ArmaController : ControllerBase {
     [HttpGet("get")]
     public async Task<ActionResult<Arma>> obtener() {
         try {
-            var listaArmas = await context.armas
-                .Include(x => x.categoria)
-                .OrderBy(x => x.nombre)
-                .ToListAsync();
+            var listaArmas = new List<Arma>();
+
+            if(User.IsInRole("Admin")) {
+                listaArmas = await context.armas
+                    .Include(x => x.categoria)
+                    .OrderBy(x => x.nombre)
+                    .ToListAsync();
+            } else {
+                listaArmas = await context.armas
+                    .Include(x => x.categoria)
+                    .Where(x => x.disponible)
+                    .OrderBy(x => x.nombre)
+                    .ToListAsync();
+            }
 
             return Ok(listaArmas);
         } catch (Exception ex) {
@@ -117,10 +149,21 @@ public class ArmaController : ControllerBase {
     [HttpGet("search/{nombre}")]
     public async Task<ActionResult<Arma>> obtenerBusqueda(string nombre) {
         try {
-            var listaArmas = await context.armas
-                .Where(x => x.nombre.Contains(nombre))
-                .Include(x => x.categoria)
-                .ToListAsync();
+            var listaArmas = new List<Arma>();
+
+            if(User.IsInRole("Admin")) {
+                listaArmas = await context.armas
+                    .Include(x => x.categoria)
+                    .Where(x => x.nombre.Contains(nombre))
+                    .OrderBy(x => x.nombre)
+                    .ToListAsync();
+            } else {
+                listaArmas = await context.armas
+                    .Include(x => x.categoria)
+                    .Where(x => x.nombre.Contains(nombre) && x.disponible)
+                    .OrderBy(x => x.nombre)
+                    .ToListAsync();
+            }
 
             if(listaArmas.Count() > 0) {
                 return Ok(listaArmas);

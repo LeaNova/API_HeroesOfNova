@@ -17,4 +17,5 @@ public class Armadura {
     public int precio { get; set; }
     public float peso { get; set; }
     public string descripcion { get; set; }
+    public bool disponible { get; set; }
 }

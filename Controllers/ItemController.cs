@@ -56,6 +56,28 @@ public class ItemController : ControllerBase {
         }
     }
 
+    [HttpPut("baja/{id}")]
+    public async Task<ActionResult<Item>> baja(int id) {
+        try {
+            Item i = context.items
+                .AsNoTracking()
+                .FirstOrDefault(x => x.idItem == id);
+
+            if(i != null) {
+                i.disponible = !i.disponible;
+
+                context.items.Update(i);
+                context.SaveChanges();
+
+                return Ok();
+            }
+
+            return BadRequest("Error en actualizar");
+        } catch (Exception ex) {
+            return BadRequest(ex.Message);
+        }
+    }
+
     //Modificacion
     [HttpPut("modificar/{id}")]
     public async Task<IActionResult> modificar([FromForm] Item i, int id) {
@@ -87,10 +109,20 @@ public class ItemController : ControllerBase {
     [HttpGet("get")]
     public async Task<ActionResult<Item>> obtener() {
         try {
-            var listaItems = await context.items
-                .Include(x => x.tipo)
-                .OrderBy(x => x.nombre)
-                .ToListAsync();
+            var listaItems = new List<Item>();
+
+            if(User.IsInRole("Admin")) {
+                listaItems = await context.items
+                    .Include(x => x.tipo)
+                    .OrderBy(x => x.nombre)
+                    .ToListAsync();
+            } else {
+                listaItems = await context.items
+                    .Include(x => x.tipo)
+                    .Where(x => x.disponible)
+                    .OrderBy(x => x.nombre)
+                    .ToListAsync();
+            }
 
             return Ok(listaItems);
         } catch (Exception ex) {
@@ -118,16 +150,25 @@ public class ItemController : ControllerBase {
     [HttpGet("search/{nombre}")]
     public async Task<ActionResult<Item>> obtenerBusqueda(string nombre) {
         try {
-            var listaItems = await context.items
-                .Include(x => x.tipo)
-                .Where(x => x.nombre.Contains(nombre))
-                .ToListAsync();
-
-            if(listaItems.Count() < 0) {
-                return BadRequest("Sin resultados");
+            var listaItems = new List<Item>();
+            
+            if(User.IsInRole("Admin")) {
+                listaItems = await context.items
+                    .Include(x => x.tipo)
+                    .Where(x => x.nombre.Contains(nombre))
+                    .ToListAsync();
+            } else {
+                listaItems = await context.items
+                    .Include(x => x.tipo)
+                    .Where(x => x.nombre.Contains(nombre) && x.disponible)
+                    .ToListAsync();
             }
 
-            return Ok(listaItems);
+            if(listaItems.Count() > 0) {
+                return Ok(listaItems);
+            }
+
+            return BadRequest("Sin resultados");
         } catch (Exception ex) {
             return BadRequest(ex.Message);
         }

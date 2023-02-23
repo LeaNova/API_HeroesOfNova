@@ -18,4 +18,5 @@ public class Clase {
     public float modCrt { get; set; }
     public float modAcc { get; set; }
     public string descripcion { get; set; }
+    public bool disponible { get; set; }
 }

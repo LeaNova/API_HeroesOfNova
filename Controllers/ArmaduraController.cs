@@ -55,6 +55,28 @@ public class ArmaduraController : ControllerBase {
         }
     }
 
+    [HttpPut("baja/{id}")]
+    public async Task<ActionResult<Armadura>> baja(int id) {
+        try {
+            Armadura a = context.armaduras
+                .AsNoTracking()
+                .FirstOrDefault(x => x.idArmadura == id);
+
+            if(a != null) {
+                a.disponible = !a.disponible;
+
+                context.armaduras.Update(a);
+                context.SaveChanges();
+
+                return Ok();
+            }
+
+            return BadRequest("Error en actualizar");
+        } catch (Exception ex) {
+            return BadRequest(ex.Message);
+        }
+    }
+
     //Modificacion
     [HttpPut("modificar/{id}")]
     public async Task<IActionResult> modificar([FromForm] Armadura a, int id) {
@@ -85,9 +107,18 @@ public class ArmaduraController : ControllerBase {
     [HttpGet("get")]
     public async Task<ActionResult<Armadura>> obtener() {
         try {
-            var listaArmaduras = await context.armaduras
-                .OrderBy(x => x.nombre)
-                .ToListAsync();
+            var listaArmaduras = new List<Armadura>();
+
+            if(User.IsInRole("Admin")) {
+                listaArmaduras = await context.armaduras
+                    .OrderBy(x => x.nombre)
+                    .ToListAsync();
+            } else {
+                listaArmaduras = await context.armaduras
+                    .Where(x => x.disponible)
+                    .OrderBy(x => x.nombre)
+                    .ToListAsync();
+            }
 
             return Ok(listaArmaduras);
         } catch (Exception ex) {
@@ -114,9 +145,19 @@ public class ArmaduraController : ControllerBase {
     [HttpGet("search/{nombre}")]
     public async Task<ActionResult<Armadura>> obtenerBusqueda(string nombre) {
         try {
-            var listaArmaduras = await context.armaduras
-                .Where(x => x.nombre.Contains(nombre))
-                .ToListAsync();
+            var listaArmaduras = new List<Armadura>();
+            
+            if(User.IsInRole("Admin")) {
+                listaArmaduras = await context.armaduras
+                    .Where(x => x.nombre.Contains(nombre))
+                    .OrderBy(x => x.nombre)
+                    .ToListAsync();
+            } else {
+                listaArmaduras = await context.armaduras
+                    .Where(x => x.nombre.Contains(nombre) && x.disponible)
+                    .OrderBy(x => x.nombre)
+                    .ToListAsync();
+            }
 
             if(listaArmaduras.Count() > 0) {
                 return Ok(listaArmaduras);

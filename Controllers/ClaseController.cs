@@ -55,6 +55,28 @@ public class ClaseController : ControllerBase {
         }
     }
 
+    [HttpPut("baja/{id}")]
+    public async Task<ActionResult<Clase>> baja(int id) {
+        try {
+            Clase c = context.clases
+                .AsNoTracking()
+                .FirstOrDefault(x => x.idClase == id);
+
+            if(c != null) {
+                c.disponible = !c.disponible;
+
+                context.clases.Update(c);
+                context.SaveChanges();
+
+                return Ok();
+            }
+
+            return BadRequest("Error en actualizar");
+        } catch (Exception ex) {
+            return BadRequest(ex.Message);
+        }
+    }
+
     //Modificar
     [HttpPut("modificar/{id}")]
     public async Task<IActionResult> modificar([FromForm] Clase c, int id) {
@@ -85,9 +107,18 @@ public class ClaseController : ControllerBase {
     [HttpGet("get")]
     public async Task<ActionResult<Clase>> obtener() {
         try {
-            var listaClases = await context.clases
-                .OrderBy(x => x.nombre)
-                .ToListAsync();
+            var listaClases = new List<Clase>();
+
+            if(User.IsInRole("Admin")) {
+                listaClases = await context.clases
+                    .OrderBy(x => x.nombre)
+                    .ToListAsync();
+            } else {
+                listaClases = await context.clases
+                    .Where(x => x.disponible)
+                    .OrderBy(x => x.nombre)
+                    .ToListAsync();
+            }
 
             return Ok(listaClases);
         } catch (Exception ex) {

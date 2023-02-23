@@ -54,6 +54,28 @@ public class RazaController : ControllerBase {
         }
     }
 
+    [HttpPut("baja/{id}")]
+    public async Task<ActionResult<Raza>> baja(int id) {
+        try {
+            Raza r = context.razas
+                .AsNoTracking()
+                .FirstOrDefault(x => x.idRaza == id);
+
+            if(r != null) {
+                r.disponible = !r.disponible;
+
+                context.razas.Update(r);
+                context.SaveChanges();
+
+                return Ok();
+            }
+
+            return BadRequest("Error en actualizar");
+        } catch (Exception ex) {
+            return BadRequest(ex.Message);
+        }
+    }
+
     //Modificacion
     [HttpPut("modificar/{id}")]
     public async Task<IActionResult> modificar([FromForm] Raza r, int id) {
@@ -83,9 +105,18 @@ public class RazaController : ControllerBase {
     [HttpGet("get")]
     public async Task<ActionResult<Raza>> obtener() {
         try {
-            var listaRaza = await context.razas
-                .OrderBy(x => x.nombre)
-                .ToListAsync();
+            var listaRaza = new List<Raza>();
+
+            if(User.IsInRole("Admin")) {
+                listaRaza = await context.razas
+                    .OrderBy(x => x.nombre)
+                    .ToListAsync();
+            } else {
+                listaRaza = await context.razas
+                    .Where(x => x.disponible)
+                    .OrderBy(x => x.nombre)
+                    .ToListAsync();
+            }
 
             return Ok(listaRaza);
         } catch (Exception ex) {

@@ -18,4 +18,5 @@ public class Raza {
     public int baseCrt { get; set; } //Critico
     public int baseAcc { get; set; } //Precision
     public string descripcion { get; set; }
+    public bool disponible { get; set; }
 }

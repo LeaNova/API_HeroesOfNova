@@ -56,6 +56,28 @@ public class ArtefactoController : ControllerBase {
         }
     }
 
+    [HttpPut("baja/{id}")]
+    public async Task<ActionResult<Artefacto>> baja(int id) {
+        try {
+            Artefacto a = context.artefactos
+                .AsNoTracking()
+                .FirstOrDefault(x => x.idArtefacto == id);
+
+            if(a != null) {
+                a.disponible = !a.disponible;
+
+                context.artefactos.Update(a);
+                context.SaveChanges();
+
+                return Ok();
+            }
+
+            return BadRequest("Error en actualizar");
+        } catch (Exception ex) {
+            return BadRequest(ex.Message);
+        }
+    }
+
     //Modificacion
     [HttpPut("modificar/{id}")]
     public async Task<IActionResult> modificar([FromForm] Artefacto a, int id) {
@@ -87,10 +109,20 @@ public class ArtefactoController : ControllerBase {
     [HttpGet("get")]
     public async Task<ActionResult<Artefacto>> obtener() {
         try {
-            var listaArtefactos = await context.artefactos
-                .Include(x => x.seccion)
-                .OrderBy(x => x.nombre)
-                .ToListAsync();
+            var listaArtefactos = new List<Artefacto>();
+
+            if(User.IsInRole("Admin")) {
+                listaArtefactos = await context.artefactos
+                    .Include(x => x.seccion)
+                    .OrderBy(x => x.nombre)
+                    .ToListAsync();
+            } else {
+                listaArtefactos = await context.artefactos
+                    .Include(x => x.seccion)
+                    .Where(x => x.disponible)
+                    .OrderBy(x => x.nombre)
+                    .ToListAsync();
+            }
             
             return Ok(listaArtefactos);
         } catch (Exception ex) {
@@ -118,10 +150,21 @@ public class ArtefactoController : ControllerBase {
     [HttpGet("search/{nombre}")]
     public async Task<ActionResult<Artefacto>> obtenerBusqueda(string nombre) {
         try {
-            var listaArtefactos = await context.artefactos
-                .Where(x => x.nombre.Contains(nombre))
-                .Include(x => x.seccion)
-                .ToListAsync();
+            var listaArtefactos = new List<Artefacto>();
+
+            if(User.IsInRole("Admin")) {
+                listaArtefactos = await context.artefactos
+                    .Include(x => x.seccion)
+                    .Where(x => x.nombre.Contains(nombre))
+                    .OrderBy(x => x.nombre)
+                    .ToListAsync();
+            } else {
+                listaArtefactos = await context.artefactos
+                    .Include(x => x.seccion)
+                    .Where(x => x.nombre.Contains(nombre) && x.disponible)
+                    .OrderBy(x => x.nombre)
+                    .ToListAsync();
+            }
 
             if(listaArtefactos.Count() > 0) {
                 return Ok(listaArtefactos);
