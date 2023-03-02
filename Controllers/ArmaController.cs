@@ -90,6 +90,7 @@ public class ArmaController : ControllerBase {
                     a = corregir(a);
                     a.idArma = id;
                     a.categoriaId = original.categoriaId;
+                    a.rarezaId = original.rarezaId;
 
                     context.armas.Update(a);
                     await context.SaveChangesAsync();
@@ -112,12 +113,12 @@ public class ArmaController : ControllerBase {
 
             if(User.IsInRole("Admin")) {
                 listaArmas = await context.armas
-                    .Include(x => x.categoria)
+                    .Include(x => x.categoria).Include(x => x.rareza)
                     .OrderBy(x => x.nombre)
                     .ToListAsync();
             } else {
                 listaArmas = await context.armas
-                    .Include(x => x.categoria)
+                    .Include(x => x.categoria).Include(x => x.rareza)
                     .Where(x => x.disponible)
                     .OrderBy(x => x.nombre)
                     .ToListAsync();
@@ -133,7 +134,7 @@ public class ArmaController : ControllerBase {
     public async Task<ActionResult<Arma>> obtenerId(int id) {
         try {
             Arma a = context.armas
-                .Include(x => x.categoria)
+                .Include(x => x.categoria).Include(x => x.rareza)
                 .FirstOrDefault(x => x.idArma == id);
             
             if(a != null) {
@@ -153,13 +154,13 @@ public class ArmaController : ControllerBase {
 
             if(User.IsInRole("Admin")) {
                 listaArmas = await context.armas
-                    .Include(x => x.categoria)
+                    .Include(x => x.categoria).Include(x => x.rareza)
                     .Where(x => x.nombre.Contains(nombre))
                     .OrderBy(x => x.nombre)
                     .ToListAsync();
             } else {
                 listaArmas = await context.armas
-                    .Include(x => x.categoria)
+                    .Include(x => x.categoria).Include(x => x.rareza)
                     .Where(x => x.nombre.Contains(nombre) && x.disponible)
                     .OrderBy(x => x.nombre)
                     .ToListAsync();

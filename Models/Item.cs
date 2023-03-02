@@ -8,6 +8,7 @@ public class Item {
     public int idItem { get; set; }
     public string nombre { get; set; }
     public int tipoId { get; set; }
+    public int rarezaId { get; set; }
     //Efecto si posee
     public int bonoVida { get; set; }
     public int bonoEnergia { get; set; }
@@ -27,4 +28,6 @@ public class Item {
     //Clases foráneas
     [ForeignKey(nameof(tipoId))]
     public Tipo? tipo { get; set; }
+    [ForeignKey(nameof(rarezaId))]
+    public Rareza? rareza { get; set; }
 }

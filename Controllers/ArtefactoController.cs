@@ -91,6 +91,7 @@ public class ArtefactoController : ControllerBase {
                     a = corregir(a);
                     a.idArtefacto = id;
                     a.seccionId = original.seccionId;
+                    a.rarezaId = original.rarezaId;
 
                     context.artefactos.Update(a);
                     await context.SaveChangesAsync();
@@ -113,12 +114,12 @@ public class ArtefactoController : ControllerBase {
 
             if(User.IsInRole("Admin")) {
                 listaArtefactos = await context.artefactos
-                    .Include(x => x.seccion)
+                    .Include(x => x.seccion).Include(x => x.rareza)
                     .OrderBy(x => x.nombre)
                     .ToListAsync();
             } else {
                 listaArtefactos = await context.artefactos
-                    .Include(x => x.seccion)
+                    .Include(x => x.seccion).Include(x => x.rareza)
                     .Where(x => x.disponible)
                     .OrderBy(x => x.nombre)
                     .ToListAsync();
@@ -134,7 +135,7 @@ public class ArtefactoController : ControllerBase {
     public async Task<ActionResult<Artefacto>> obtenerId(int id) {
         try {
             Artefacto a = context.artefactos
-                .Include(x => x.seccion)
+                .Include(x => x.seccion).Include(x => x.rareza)
                 .FirstOrDefault(x => x.idArtefacto == id);
             
             if(a != null) {

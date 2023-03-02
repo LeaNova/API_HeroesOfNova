@@ -9,6 +9,7 @@ public class Arma {
     public string nombre { get; set; }
     //Bases del arma
     public int categoriaId { get; set; }
+    public int rarezaId { get; set; }
     public int danioArma { get; set; }
     public int bonoArma { get; set; }
     //Bonos del arma
@@ -31,4 +32,6 @@ public class Arma {
     //Clases foráneas
     [ForeignKey(nameof(categoriaId))]
     public Categoria? categoria { get; set; }
+    [ForeignKey(nameof(rarezaId))]
+    public Rareza? rareza { get; set; }
 }

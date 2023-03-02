@@ -89,6 +89,7 @@ public class ArmaduraController : ControllerBase {
                 if(original != null) {
                     a = corregir(a);
                     a.idArmadura = id;
+                    a.rarezaId = original.rarezaId;
 
                     context.armaduras.Update(a);
                     await context.SaveChangesAsync();
@@ -111,10 +112,12 @@ public class ArmaduraController : ControllerBase {
 
             if(User.IsInRole("Admin")) {
                 listaArmaduras = await context.armaduras
+                    .Include(x => x.rareza)
                     .OrderBy(x => x.nombre)
                     .ToListAsync();
             } else {
                 listaArmaduras = await context.armaduras
+                    .Include(x => x.rareza)
                     .Where(x => x.disponible)
                     .OrderBy(x => x.nombre)
                     .ToListAsync();
@@ -130,6 +133,7 @@ public class ArmaduraController : ControllerBase {
     public async Task<ActionResult<Armadura>> obtenerId(int id) {
         try {
             Armadura a = context.armaduras
+                .Include(x => x.rareza)
                 .FirstOrDefault(x => x.idArmadura == id);
 
             if(a != null) {

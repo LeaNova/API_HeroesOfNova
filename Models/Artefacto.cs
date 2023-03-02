@@ -8,6 +8,7 @@ public class Artefacto{
     public int idArtefacto { get; set; }
     public string nombre { get; set; }
     public int seccionId { get; set; }
+    public int rarezaId { get; set; }
     //Efecto
     public int bonoVida { get; set; }
     public int bonoEnergia { get; set; }
@@ -27,4 +28,6 @@ public class Artefacto{
     //Clases foráneas
     [ForeignKey(nameof(seccionId))]
     public Seccion? seccion { get; set; }
+    [ForeignKey(nameof(rarezaId))]
+    public Rareza? rareza { get; set; }
 }

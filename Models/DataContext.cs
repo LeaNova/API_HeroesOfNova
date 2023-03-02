@@ -33,6 +33,9 @@ public class DataContext : DbContext {
     public DbSet<InvItem> invItems { get; set; }
     public DbSet<InvArtefacto> invArtefactos { get; set; }
 
+    //Contexto para extras
+    public DbSet<Rareza> rarezas { get; set; }
+
     //Setteo de varias Key
     protected override void OnModelCreating(ModelBuilder modelBuilder) {
         modelBuilder.Entity<Participante>().HasKey(par => new { par.grupoId, par.usuarioId });

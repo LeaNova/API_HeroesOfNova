@@ -91,6 +91,7 @@ public class ItemController : ControllerBase {
                     i = corregir(i);
                     i.idItem = id;
                     i.tipoId = original.tipoId;
+                    i.rarezaId = original.rarezaId;
 
                     context.items.Update(i);
                     await context.SaveChangesAsync();
@@ -113,12 +114,12 @@ public class ItemController : ControllerBase {
 
             if(User.IsInRole("Admin")) {
                 listaItems = await context.items
-                    .Include(x => x.tipo)
+                    .Include(x => x.tipo).Include(x => x.rareza)
                     .OrderBy(x => x.nombre)
                     .ToListAsync();
             } else {
                 listaItems = await context.items
-                    .Include(x => x.tipo)
+                    .Include(x => x.tipo).Include(x => x.rareza)
                     .Where(x => x.disponible)
                     .OrderBy(x => x.nombre)
                     .ToListAsync();
@@ -134,14 +135,14 @@ public class ItemController : ControllerBase {
     public async Task<ActionResult<Item>> obtenerId(int id) {
         try {
             Item i = context.items
-                .Include(x => x.tipo)
+                .Include(x => x.tipo).Include(x => x.rareza)
                 .FirstOrDefault(x => x.idItem == id);
             
-            if(i == null) {
-                return BadRequest("Objeto vacío");
+            if(i != null) {
+                return Ok(i);
             }
 
-            return Ok(i);
+            return BadRequest("Objeto vacío");
         } catch (Exception ex) {
             return BadRequest(ex.Message);
         }
